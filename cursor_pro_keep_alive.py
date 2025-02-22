@@ -259,29 +259,18 @@ def sign_up_account(browser, tab):
 
     handle_turnstile(tab)
 
-    while True:
-        try:
-            if tab.ele("Account Settings"):
-                logging.info("注册成功 - 已进入账户设置页面")
-                break
-            if tab.ele("@data-index=0"):
-                logging.info("正在获取邮箱验证码...")
-                code = email_handler.get_verification_code()
-                if not code:
-                    logging.error("获取验证码失败")
-                    return False
+    # Manually input email verification code
+    logging.info("请手动输入邮箱验证码:")
+    verification_code = input("请输入从邮箱收到的验证码: ")
+    try:
+        for i, digit in enumerate(verification_code):
+            tab.ele(f"@data-index={i}").input(digit)
+            time.sleep(random.uniform(0.1, 0.3))
+        logging.info("验证码输入完成")
 
-                logging.info(f"成功获取验证码: {code}")
-                logging.info("正在输入验证码...")
-                i = 0
-                for digit in code:
-                    tab.ele(f"@data-index={i}").input(digit)
-                    time.sleep(random.uniform(0.1, 0.3))
-                    i += 1
-                logging.info("验证码输入完成")
-                break
-        except Exception as e:
-            logging.error(f"验证码处理过程出错: {str(e)}")
+    except Exception as e:
+        logging.error(f"验证码处理过程出错: {str(e)}")
+        return False
 
     handle_turnstile(tab)
     wait_time = random.randint(3, 6)
@@ -313,8 +302,7 @@ def sign_up_account(browser, tab):
     logging.info(account_info)
     time.sleep(5)
     return True
-
-
+    
 class EmailGenerator:
     def __init__(
         self,
